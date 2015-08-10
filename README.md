@@ -5,9 +5,10 @@ A simple side-scroller style game written from Tara Walker's MonoGame
 development tutorial located at:
 http://blogs.msdn.com/b/tarawalker/archive/2012/12/04/windows-8-game-development-using-c-xna-and-monogame-3-0-building-a-shooter-game-walkthrough-part-1-overview-installation-monogame-3-0-project-creation.aspx
 
-Unfortunately, the tutorial is not complete so I'm continuing work on it for my
-own educational benefit.  All graphical and sound assets were provided by the
-above blog.
+Unfortunately, the tutorial is not complete so it doesn't go any further than collision detection between the enemy ships and the player ship.  I went a little further on my own and implemented ship explosions, the start and game over screens, shooting, and the collision detection for lasers and enemy ships.
+
+I intend to continue work on this for my own educational benefit.  All
+graphical and sound assets were provided by the above blog.
 
 ## Getting started
 
