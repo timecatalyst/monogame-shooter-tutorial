@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<SourceFileCollection xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Profile>Reach</Profile>
+  <Platform>Linux</Platform>
+  <Config />
+  <SourceFiles>
+    <File>/home/andy/cs/MyGame/MyGame/Content/Graphics/bgLayer1.png</File>
+    <File>/home/andy/cs/MyGame/MyGame/Content/Graphics/bgLayer2.png</File>
+    <File>/home/andy/cs/MyGame/MyGame/Content/Graphics/endMenu.png</File>
+    <File>/home/andy/cs/MyGame/MyGame/Content/Graphics/explosion.png</File>
+    <File>/home/andy/cs/MyGame/MyGame/Content/Graphics/laser.png</File>
+    <File>/home/andy/cs/MyGame/MyGame/Content/Graphics/mainbackground.png</File>
+    <File>/home/andy/cs/MyGame/MyGame/Content/Graphics/mainMenu.png</File>
+    <File>/home/andy/cs/MyGame/MyGame/Content/Graphics/mine.png</File>
+    <File>/home/andy/cs/MyGame/MyGame/Content/Graphics/mineAnimation.png</File>
+    <File>/home/andy/cs/MyGame/MyGame/Content/Graphics/player.png</File>
+    <File>/home/andy/cs/MyGame/MyGame/Content/Graphics/shipAnimation.png</File>
+    <File>/home/andy/cs/MyGame/MyGame/Content/Sound/explosion.wav</File>
+    <File>/home/andy/cs/MyGame/MyGame/Content/Sound/gameMusic.mp3</File>
+    <File>/home/andy/cs/MyGame/MyGame/Content/Sound/laserFire.wav</File>
+    <File>/home/andy/cs/MyGame/MyGame/Content/Sound/menuMusic.mp3</File>
+  </SourceFiles>
+</SourceFileCollection>

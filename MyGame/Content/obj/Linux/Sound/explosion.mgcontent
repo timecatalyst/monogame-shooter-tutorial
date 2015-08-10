@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PipelineBuildEvent xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <SourceFile>/home/andy/cs/MyGame/MyGame/Content/Sound/explosion.wav</SourceFile>
+  <SourceTime>2012-10-03T23:22:26-04:00</SourceTime>
+  <DestFile>/home/andy/cs/MyGame/MyGame/Content/bin/Linux/Sound/explosion.xnb</DestFile>
+  <DestTime>2015-08-09T16:58:17-04:00</DestTime>
+  <Importer>WavImporter</Importer>
+  <ImporterTime>2015-08-09T10:58:56-04:00</ImporterTime>
+  <Processor>SoundEffectProcessor</Processor>
+  <ProcessorTime>2015-08-09T10:58:56-04:00</ProcessorTime>
+  <Parameters>
+    <Key>Quality</Key>
+    <Value>Best</Value>
+  </Parameters>
+  <Dependencies />
+  <BuildAsset />
+  <BuildOutput />
+</PipelineBuildEvent>
