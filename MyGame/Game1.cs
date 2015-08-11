@@ -4,6 +4,8 @@ using System.Collections.Generic;
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Audio;
+using Microsoft.Xna.Framework.Media;
 using Microsoft.Xna.Framework.Storage;
 using Microsoft.Xna.Framework.Input;
 using Shooter;
@@ -51,6 +53,12 @@ namespace MyGame
 		List<Laser> lasers;
 		TimeSpan laserSpawnTime;
 		TimeSpan previousLaserSpawnTime;
+
+		SoundEffect sfx_explode;
+		SoundEffect sfx_laser;
+
+		Song menuMusic;
+		Song gameMusic;
 
 		public Game1 ()
 		{
@@ -114,6 +122,13 @@ namespace MyGame
 			enemyTexture = Content.Load<Texture2D> ("Graphics\\mineAnimation");
 			explosionTexture = Content.Load<Texture2D> ("Graphics\\explosion");
 			laserTexture = Content.Load<Texture2D> ("Graphics\\laser");
+
+			sfx_explode = Content.Load<SoundEffect> ("Sound\\explosion");
+			sfx_laser = Content.Load<SoundEffect> ("Sound\\laserFire");
+
+			menuMusic = Content.Load<Song> ("Sound\\menuMusic");
+			gameMusic = Content.Load<Song> ("Sound\\gameMusic");
+			MediaPlayer.IsRepeating = true;
 		}
 
 		/// <summary>
@@ -142,9 +157,14 @@ namespace MyGame
 			currentGamePadState = GamePad.GetState (PlayerIndex.One);
 
 			if (GameState == GameStates.Start) {
-				if (currentKeyboardState.IsKeyDown (Keys.Enter) || currentGamePadState.Buttons.Start == ButtonState.Pressed)
+				if ( MediaPlayer.State != MediaState.Playing )
+					MediaPlayer.Play (menuMusic);
+
+				if (currentKeyboardState.IsKeyDown (Keys.Enter) || currentGamePadState.Buttons.Start == ButtonState.Pressed) {
 					GameState = GameStates.Playing;
-				else {
+					MediaPlayer.Stop ();
+					MediaPlayer.Play (gameMusic);
+				} else {
 					base.Update (gameTime);
 					return;
 				}
@@ -152,6 +172,7 @@ namespace MyGame
 
 			if (!player.Active && explosions.Count <= 0) {
 				GameState = GameStates.GameOver;
+				MediaPlayer.Stop ();
 				base.Update (gameTime);
 				return;
 			}
@@ -283,6 +304,7 @@ namespace MyGame
 			Laser laser = new Laser ();
 			laser.Initialize (laserTexture, position);
 			lasers.Add (laser);
+			sfx_laser.Play ();
 		}
 
 		private void AddExplosion(Vector2 position, int xOffset, int yOffset, float velocity, int animationSpeedMS) {
@@ -294,6 +316,8 @@ namespace MyGame
 			Explosion ex = new Explosion ();
 			ex.Initialize (explosionAnimation, position, velocity);
 			explosions.Add (ex);
+
+			sfx_explode.Play ();
 		}
 
 		/// <summary>
