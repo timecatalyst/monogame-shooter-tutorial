@@ -12,11 +12,11 @@ namespace Shooter {
 		public int Width  { get { return PlayerAnimation.FrameWidth; } }
 		public int Height { get { return PlayerAnimation.FrameHeight; } }
 
-		public void Initialize(Animation animation, Vector2 position) {
+		public void Initialize(Animation animation, Vector2 position, int health) {
 			PlayerAnimation = animation;
 			Position = position;
+			Health = health;
 			Active = true;
-			Health = 50;
 		}
 
 		public void Update(GameTime gameTime) {

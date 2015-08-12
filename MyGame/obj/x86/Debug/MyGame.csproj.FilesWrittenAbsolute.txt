@@ -26,3 +26,5 @@
 /home/andy/cs/monogame-shooter-tutorial/MyGame/bin/Debug/MonoGame.Framework.dll
 /home/andy/cs/monogame-shooter-tutorial/MyGame/bin/Debug/OpenTK.dll
 /home/andy/cs/monogame-shooter-tutorial/MyGame/bin/Debug/Tao.Sdl.dll
+/home/andy/cs/monogame-shooter-tutorial/MyGame/bin/Debug/Content/Graphics/healthBar.xnb
+/home/andy/cs/monogame-shooter-tutorial/MyGame/bin/Debug/Content/gameFont.xnb

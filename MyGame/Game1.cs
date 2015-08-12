@@ -18,16 +18,18 @@ namespace MyGame
 	/// This is the main type for your game.
 	/// </summary>
 	public class Game1 : Game {
+		private const int HEALTH_MAX = 100;
 		enum GameStates { Start, Playing, GameOver }
 		GameStates GameState;
+
+		enum MenuOptions { Start=300, Restart=300, Quit=340 }
+		MenuOptions menuCursor;
 
 		GraphicsDeviceManager graphics;
 		SpriteBatch spriteBatch;
 
 		KeyboardState currentKeyboardState;
-		KeyboardState previousKeyboardState;
 		GamePadState currentGamePadState;
-		GamePadState previousGamePadState;
 
 		Player player;
 		float playerMoveSpeed;
@@ -60,6 +62,13 @@ namespace MyGame
 		Song menuMusic;
 		Song gameMusic;
 
+		Texture2D healthBar;
+		Rectangle healthBarRec;
+		int healthBarVal;
+
+		SpriteFont font;
+		int score = 0;
+
 		public Game1 ()
 		{
 			graphics = new GraphicsDeviceManager (this);
@@ -91,7 +100,9 @@ namespace MyGame
 			laserSpawnTime = TimeSpan.FromSeconds (0.5f);
 
 			GameState = GameStates.Start;
+			healthBarVal = HEALTH_MAX;
 
+			menuCursor = MenuOptions.Start;
 			base.Initialize ();
 		}
 
@@ -112,7 +123,7 @@ namespace MyGame
 			playerAnimation.Initialize (playerTexture, Vector2.Zero, 115, 69, 8, 30, Color.White, scale, true);
 			Vector2 playerPosition = new Vector2 (GraphicsDevice.Viewport.TitleSafeArea.X,
 				                         GraphicsDevice.Viewport.TitleSafeArea.Y + GraphicsDevice.Viewport.TitleSafeArea.Height / 2);
-			player.Initialize (playerAnimation, playerPosition);
+			player.Initialize (playerAnimation, playerPosition, HEALTH_MAX);
 
 			bgLayer1.Initialize (Content, "Graphics\\bgLayer1", GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height, -1);
 			bgLayer2.Initialize (Content, "Graphics\\bgLayer2", GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height, -2);
@@ -129,6 +140,11 @@ namespace MyGame
 			menuMusic = Content.Load<Song> ("Sound\\menuMusic");
 			gameMusic = Content.Load<Song> ("Sound\\gameMusic");
 			MediaPlayer.IsRepeating = true;
+
+			healthBar = Content.Load<Texture2D> ("Graphics\\healthBar");
+			healthBarRec = new Rectangle (15, 15, healthBar.Width, healthBar.Height);
+
+			font = Content.Load<SpriteFont> ("gameFont");
 		}
 
 		/// <summary>
@@ -146,48 +162,89 @@ namespace MyGame
 			}
 			#endif
 
-			if (GameState == GameStates.GameOver) {
-				base.Update (gameTime);	
-				return;
-			}
-
-			previousGamePadState = currentGamePadState;
-			previousKeyboardState = currentKeyboardState;
 			currentKeyboardState = Keyboard.GetState ();
 			currentGamePadState = GamePad.GetState (PlayerIndex.One);
 
-			if (GameState == GameStates.Start) {
-				if ( MediaPlayer.State != MediaState.Playing )
-					MediaPlayer.Play (menuMusic);
+			switch(GameState) {
+				case GameStates.Start:
+					UpdateStartMenu ();
+					break;
+				case GameStates.GameOver:
+					UpdateGameOverScreen();
+					break;
+				case GameStates.Playing:
+					UpdateGamePlay(gameTime);
+					break;
+			}
+			base.Update (gameTime);
 
-				if (currentKeyboardState.IsKeyDown (Keys.Enter) || currentGamePadState.Buttons.Start == ButtonState.Pressed) {
-					GameState = GameStates.Playing;
-					MediaPlayer.Stop ();
-					MediaPlayer.Play (gameMusic);
-				} else {
-					base.Update (gameTime);
-					return;
-				}
+		}
+
+		private void UpdateStartMenu() {
+			if ( MediaPlayer.State != MediaState.Playing )
+				MediaPlayer.Play (menuMusic);
+
+			if (currentKeyboardState.IsKeyDown (Keys.Enter) || currentGamePadState.Buttons.Start == ButtonState.Pressed) {
+				if (menuCursor == MenuOptions.Quit)
+					Exit ();
+
+				GameState = GameStates.Playing;
+				MediaPlayer.Stop ();
 			}
 
+			if (currentKeyboardState.IsKeyDown (Keys.Down) || currentGamePadState.DPad.Up == ButtonState.Pressed) {
+				menuCursor = MenuOptions.Quit;
+			}
+			if (currentKeyboardState.IsKeyDown (Keys.Up) || currentGamePadState.DPad.Down == ButtonState.Pressed) {
+				menuCursor = MenuOptions.Start;
+			}
+		}
+
+		private void UpdateGameOverScreen() {
+			if (currentKeyboardState.IsKeyDown (Keys.Enter) || currentGamePadState.Buttons.Start == ButtonState.Pressed) {
+				if (menuCursor == MenuOptions.Quit)
+					Exit ();
+
+				player.Health = healthBarVal = HEALTH_MAX;
+				score = 0;
+				GameState = GameStates.Playing;
+				player.Active = true;
+				player.Position.X = GraphicsDevice.Viewport.TitleSafeArea.X;
+				player.Position.Y = GraphicsDevice.Viewport.TitleSafeArea.Y + GraphicsDevice.Viewport.TitleSafeArea.Height / 2;
+				healthBarRec.Width = healthBar.Width;
+				enemies.Clear ();
+			}
+
+			if (currentKeyboardState.IsKeyDown (Keys.Down) || currentGamePadState.DPad.Up == ButtonState.Pressed) {
+				menuCursor = MenuOptions.Quit;
+			}
+			if (currentKeyboardState.IsKeyDown (Keys.Up) || currentGamePadState.DPad.Down == ButtonState.Pressed) {
+				menuCursor = MenuOptions.Restart;
+			}
+		}
+
+		private void UpdateGamePlay(GameTime gt) {
 			if (!player.Active && explosions.Count <= 0) {
 				GameState = GameStates.GameOver;
 				MediaPlayer.Stop ();
-				base.Update (gameTime);
 				return;
 			}
 
-			UpdatePlayer (gameTime);
-			bgLayer1.Update (gameTime);
-			bgLayer2.Update (gameTime);
+			if (MediaPlayer.State != MediaState.Playing)
+				MediaPlayer.Play (gameMusic);	
+	
+			if (player.Health < healthBarVal) {
+				healthBarVal--;
+				healthBarRec.Width = (int)(healthBar.Width * (healthBarVal / (float)HEALTH_MAX));
+			}
 
-			UpdateEnemies (gameTime);
-			UpdateExplosions (gameTime);
-			UpdateLasers (gameTime);
-
+			UpdatePlayer (gt);
+			bgLayer1.Update (gt);
+			bgLayer2.Update (gt);
+			UpdateEnemies (gt);
+			UpdateExplosions (gt);
+			UpdateLasers (gt);
 			UpdateCollision ();
-
-			base.Update (gameTime);
 		}
 
 		private void UpdatePlayer(GameTime gameTime) {
@@ -280,6 +337,7 @@ namespace MyGame
 						enemies [i].Health = 0;
 						AddExplosion (enemies [i].Position, -50, -30, enemies [i].Speed, 30);
 						lasers [j].Active = false;
+						score += enemies [i].Value;
 					}
 				}
 			}
@@ -330,18 +388,42 @@ namespace MyGame
 			graphics.GraphicsDevice.Clear (Color.CornflowerBlue);
 
 			spriteBatch.Begin ();
-			if (GameState == GameStates.Start) {
-				spriteBatch.Draw (startMenu, rectBackground, Color.White);
-				spriteBatch.End ();
-				return;
+
+			switch (GameState) {
+				case GameStates.Start:
+					DrawStartMenu ();
+					break;
+				case GameStates.GameOver:
+					DrawGameOverScreen ();
+					break;
+				case GameStates.Playing:
+					DrawGamePlay ();
+					break;
 			}
 
-			if (GameState == GameStates.GameOver) {
-				spriteBatch.Draw (gameOverScreen, rectBackground, Color.White);
-				spriteBatch.End ();
-				return;
-			}
+			spriteBatch.End ();
+			base.Draw (gameTime);
+		}
 
+		private void DrawStartMenu() {
+			spriteBatch.Draw (startMenu, rectBackground, Color.White);
+
+			spriteBatch.DrawString (font, ">", new Vector2 (325, (int)menuCursor), Color.White);
+			spriteBatch.DrawString (font, "Start", new Vector2 (350, 300), Color.White);
+			spriteBatch.DrawString (font, "Quit", new Vector2 (350, 340), Color.White);
+		}
+
+		private void DrawGameOverScreen() {
+			spriteBatch.Draw (gameOverScreen, rectBackground, Color.White);
+
+			spriteBatch.DrawString (font, "Final Score: " + score, new Vector2 (300, 200), Color.White);
+
+			spriteBatch.DrawString (font, ">", new Vector2 (325, (int)menuCursor), Color.White);
+			spriteBatch.DrawString (font, "Restart", new Vector2 (350, 300), Color.White);
+			spriteBatch.DrawString (font, "Quit", new Vector2 (350, 340), Color.White);
+		}
+
+		private void DrawGamePlay() {
 			spriteBatch.Draw (mainBackground, rectBackground, Color.White);
 			bgLayer1.Draw (spriteBatch);
 			bgLayer2.Draw (spriteBatch);
@@ -359,9 +441,9 @@ namespace MyGame
 			}
 
 			player.Draw (spriteBatch);
-			spriteBatch.End ();
-            
-			base.Draw (gameTime);
+
+			spriteBatch.Draw (healthBar, healthBarRec, Color.White);
+			spriteBatch.DrawString (font, "Score: " + score, new Vector2 (600, 10), Color.White);
 		}
 	}
 }
