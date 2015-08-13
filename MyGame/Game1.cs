@@ -8,7 +8,6 @@ using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Media;
 using Microsoft.Xna.Framework.Storage;
 using Microsoft.Xna.Framework.Input;
-using Shooter;
 
 #endregion
 
@@ -69,6 +68,10 @@ namespace MyGame
 		SpriteFont font;
 		int score;
 
+		int maxEnemyCount;
+		Texture2D bossTexture;
+		Boss boss;
+
 		public Game1 ()
 		{
 			graphics = new GraphicsDeviceManager (this);
@@ -102,6 +105,8 @@ namespace MyGame
 			GameState = GameStates.Start;
 			healthBarVal = HEALTH_MAX;
 			score = 0;
+			maxEnemyCount = 1;
+			boss = new Boss ();
 
 			menuCursor = MenuOptions.Start;
 			base.Initialize ();
@@ -120,10 +125,10 @@ namespace MyGame
 			startMenu = Content.Load<Texture2D> ("Graphics\\mainMenu");
 
 			Texture2D playerTexture = Content.Load<Texture2D> ("Graphics\\shipAnimation");
-			Animation playerAnimation = new Animation ();
-			playerAnimation.Initialize (playerTexture, Vector2.Zero, 115, 69, 8, 30, Color.White, scale, true);
 			Vector2 playerPosition = new Vector2 (GraphicsDevice.Viewport.TitleSafeArea.X,
 				                         GraphicsDevice.Viewport.TitleSafeArea.Y + GraphicsDevice.Viewport.TitleSafeArea.Height / 2);
+			Animation playerAnimation = new Animation ();
+			playerAnimation.Initialize (playerTexture, playerPosition, 115, 69, 8, 30, Color.White, scale, true);
 			player.Initialize (playerAnimation, playerPosition, HEALTH_MAX);
 
 			bgLayer1.Initialize (Content, "Graphics\\bgLayer1", GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height, -1);
@@ -146,6 +151,11 @@ namespace MyGame
 			healthBarRec = new Rectangle (15, 15, healthBar.Width, healthBar.Height);
 
 			font = Content.Load<SpriteFont> ("gameFont");
+
+			bossTexture = Content.Load<Texture2D> ("Graphics\\boss");
+			Vector2 bossPosition = new Vector2(GraphicsDevice.Viewport.Width + bossTexture.Width,
+				GraphicsDevice.Viewport.Height / 2 - bossTexture.Height / 2);
+			boss.Initialize (bossTexture, bossPosition);
 		}
 
 		/// <summary>
@@ -242,16 +252,17 @@ namespace MyGame
 			UpdatePlayer (gt);
 			bgLayer1.Update (gt);
 			bgLayer2.Update (gt);
-			UpdateEnemies (gt);
-			UpdateExplosions (gt);
-			UpdateLasers (gt);
+
+			if (boss.Active) UpdateBoss (gt);
+
+			UpdateObjectLists (gt);
 			UpdateCollision ();
 		}
 
 		private void UpdatePlayer(GameTime gameTime) {
 			if (!player.Active) return;
-			player.Position.X += currentGamePadState.ThumbSticks.Left.X * playerMoveSpeed;
-			player.Position.Y -= currentGamePadState.ThumbSticks.Left.Y * playerMoveSpeed;
+			//player.Position.X += currentGamePadState.ThumbSticks.Left.X * playerMoveSpeed;
+			//player.Position.Y -= currentGamePadState.ThumbSticks.Left.Y * playerMoveSpeed;
 
 			if (currentKeyboardState.IsKeyDown (Keys.Left) || currentGamePadState.DPad.Left == ButtonState.Pressed) {
 				player.Position.X -= playerMoveSpeed;
@@ -278,46 +289,51 @@ namespace MyGame
 			player.Update (gameTime);
 		}
 
-		private void UpdateEnemies(GameTime gameTime) {
-			if (gameTime.TotalGameTime - previousSpawnTime > enemySpawnTime) {
-				previousSpawnTime = gameTime.TotalGameTime;
+		private void UpdateBoss(GameTime gameTime) {
+			if (boss.hSpeed < 0f && (boss.Position.X < GraphicsDevice.Viewport.Width - boss.Width)) {
+				boss.hSpeed = 0f;
+				boss.vSpeed = 1f;
+			}
+
+			if (boss.hSpeed == 0f) {
+				if (boss.Position.Y >= (GraphicsDevice.Viewport.Height - boss.Height)) {
+					boss.vSpeed = -1f;
+				}
+
+				if (boss.Position.Y <= 50f) {
+					boss.vSpeed = 1f;
+				}
+			}
+
+			boss.Update (gameTime);
+		}
+
+		private void UpdateObjectLists(GameTime gt) {
+			if (!boss.Active && (gt.TotalGameTime - previousSpawnTime > enemySpawnTime)) {
+				previousSpawnTime = gt.TotalGameTime;
 				AddEnemy ();
+				if (--maxEnemyCount <= 0) boss.Active = true;
 			}
 
 			for (int i = enemies.Count - 1; i >= 0; i--) {
-				enemies [i].Update (gameTime);
-				if (!enemies [i].Active) {
-					enemies.RemoveAt (i);
-				}
+				enemies [i].Update (gt);
+				if (!enemies [i].Active) enemies.RemoveAt (i);
 			}
-		}
 
-		private void UpdateExplosions(GameTime gameTime) {
 			for (int i = explosions.Count - 1; i >= 0; i--) {
-				explosions[i].Update(gameTime);
-				if (!explosions[i].Active) {
-					explosions.RemoveAt(i);
-				}
+				explosions [i].Update (gt);
+				if (!explosions [i].Active) explosions.RemoveAt (i);
 			}
-		}
 
-		private void UpdateLasers(GameTime gameTime) {
 			for (int i = lasers.Count - 1; i >= 0; i--) {
-				lasers[i].Update(gameTime, GraphicsDevice.Viewport.Width);
-				if (!lasers[i].Active) {
-					lasers.RemoveAt(i);
-				}
+				lasers [i].Update (gt);
+				if (!lasers [i].Active) lasers.RemoveAt (i);
 			}
 		}
 
 		private void UpdateCollision() {
-			Rectangle rectangle1 = new Rectangle ((int)player.Position.X, (int)player.Position.Y, player.Width, player.Height);
-			Rectangle rectangle2;
-			Rectangle laserRect;
-
 			for (int i = 0; i < enemies.Count; i++) {
-				rectangle2 = new Rectangle ((int)enemies [i].Position.X, (int)enemies [i].Position.Y, enemies [i].Width, enemies [i].Height);
-				if (rectangle1.Intersects (rectangle2)) {
+				if (player.BoundingBox.Intersects (enemies[i].BoundingBox)) {
 					player.Health -= enemies [i].Damage;
 					enemies [i].Health = 0;
 
@@ -333,12 +349,24 @@ namespace MyGame
 
 				// See if any lasers collide
 				for (int j = 0; j < lasers.Count; j++) {
-					laserRect = new Rectangle ((int)lasers [j].Position.X, (int)lasers [j].Position.Y, lasers [j].Width, lasers [j].Height);
-					if (laserRect.Intersects (rectangle2)) {
+					if (lasers[j].BoundingBox.Intersects (enemies[i].BoundingBox)) {
 						enemies [i].Health = 0;
 						AddExplosion (enemies [i].Position, -50, -30, enemies [i].Speed, 30);
 						lasers [j].Active = false;
 						score += enemies [i].Value;
+					}
+
+					if (!boss.Active) continue;
+
+					if (lasers [j].BoundingBox.Intersects (boss.BoundingBox)) {
+						Console.WriteLine ("Getting here?");
+						lasers [j].Active = false;
+						boss.Health -= 10;
+
+						if (boss.Health <= 0) {
+							AddExplosion (boss.Position, -100, -50, 0f, 200);
+							score += boss.Value;
+						}
 					}
 				}
 			}
@@ -359,8 +387,9 @@ namespace MyGame
 		private void AddLaser(Vector2 position, int xOffset, int yOffset) {
 			position.X += xOffset;
 			position.Y += yOffset;
+
 			Laser laser = new Laser ();
-			laser.Initialize (laserTexture, position);
+			laser.Initialize (laserTexture, position, GraphicsDevice.Viewport.Width);
 			lasers.Add (laser);
 			sfx_laser.Play ();
 		}
@@ -370,11 +399,10 @@ namespace MyGame
 			position.Y += yOffset;
 
 			Animation explosionAnimation = new Animation ();
-			explosionAnimation.Initialize (explosionTexture, Vector2.Zero, 133, 134, 12, animationSpeedMS, Color.White, scale, false);
+			explosionAnimation.Initialize (explosionTexture, position, 133, 134, 12, animationSpeedMS, Color.White, scale, false);
 			Explosion ex = new Explosion ();
 			ex.Initialize (explosionAnimation, position, velocity);
 			explosions.Add (ex);
-
 			sfx_explode.Play ();
 		}
 
@@ -439,6 +467,8 @@ namespace MyGame
 			for (int i = 0; i < lasers.Count; i++) {
 				lasers [i].Draw (spriteBatch);
 			}
+
+			if (boss.Active) boss.Draw (spriteBatch);
 
 			player.Draw (spriteBatch);
 

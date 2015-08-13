@@ -17,6 +17,9 @@
 /home/andy/cs/monogame-shooter-tutorial/MyGame/bin/Debug/Content/Sound/laserFire.xnb
 /home/andy/cs/monogame-shooter-tutorial/MyGame/bin/Debug/Content/Sound/menuMusic.ogg
 /home/andy/cs/monogame-shooter-tutorial/MyGame/bin/Debug/Content/Sound/menuMusic.xnb
+/home/andy/cs/monogame-shooter-tutorial/MyGame/bin/Debug/Content/Graphics/healthBar.xnb
+/home/andy/cs/monogame-shooter-tutorial/MyGame/bin/Debug/Content/gameFont.xnb
+/home/andy/cs/monogame-shooter-tutorial/MyGame/bin/Debug/Content/Graphics/boss.xnb
 /home/andy/cs/monogame-shooter-tutorial/MyGame/bin/Debug/OpenTK.dll.config
 /home/andy/cs/monogame-shooter-tutorial/MyGame/bin/Debug/Tao.Sdl.dll.config
 /home/andy/cs/monogame-shooter-tutorial/MyGame/bin/Debug/MyGame.exe.mdb
@@ -26,6 +29,3 @@
 /home/andy/cs/monogame-shooter-tutorial/MyGame/bin/Debug/MonoGame.Framework.dll
 /home/andy/cs/monogame-shooter-tutorial/MyGame/bin/Debug/OpenTK.dll
 /home/andy/cs/monogame-shooter-tutorial/MyGame/bin/Debug/Tao.Sdl.dll
-/home/andy/cs/monogame-shooter-tutorial/MyGame/bin/Debug/Content/Graphics/healthBar.xnb
-/home/andy/cs/monogame-shooter-tutorial/MyGame/bin/Debug/Content/gameFont.xnb
-/home/andy/cs/monogame-shooter-tutorial/MyGame/bin/Debug/Content/Graphics/boss.xnb

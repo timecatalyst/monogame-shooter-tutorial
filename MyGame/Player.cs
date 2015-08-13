@@ -1,9 +1,8 @@
 ﻿using System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using MyGame;
 
-namespace Shooter {
+namespace MyGame {
 	public class Player {
 		public Animation PlayerAnimation;
 		public Vector2 Position;
@@ -11,6 +10,7 @@ namespace Shooter {
 		public int Health;
 		public int Width  { get { return PlayerAnimation.FrameWidth; } }
 		public int Height { get { return PlayerAnimation.FrameHeight; } }
+		public Rectangle BoundingBox { get { return PlayerAnimation.BoundingBox; } }
 
 		public void Initialize(Animation animation, Vector2 position, int health) {
 			PlayerAnimation = animation;

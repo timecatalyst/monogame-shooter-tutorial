@@ -10,11 +10,10 @@ namespace MyGame {
 		public int Health;
 		public int Damage;
 		public int Value;
+		public float Speed;
 		public int Width { get { return EnemyAnimation.FrameWidth; } }
 		public int Height { get { return EnemyAnimation.FrameHeight; } }
-
-		float enemyMoveSpeed;
-		public float Speed { get { return enemyMoveSpeed; } }
+		public Rectangle BoundingBox { get { return EnemyAnimation.BoundingBox; } }
 
 		public void Initialize(Animation animation, Vector2 position) {
 			EnemyAnimation = animation;
@@ -22,17 +21,15 @@ namespace MyGame {
 			Active = true;
 			Health = 10;
 			Damage = 10;
-			enemyMoveSpeed = 6f;
+			Speed = 6f;
 			Value = 100;
 		}
 
 		public void Update(GameTime gameTime) {
-			Position.X -= enemyMoveSpeed;
+			Position.X -= Speed;
 			EnemyAnimation.Position = Position;
 			EnemyAnimation.Update (gameTime);
-			if (Position.X < -Width || Health <= 0) {
-				Active = false;
-			}
+			if (Position.X < -Width || Health <= 0) Active = false;
 		}
 
 		public void Draw(SpriteBatch sb){

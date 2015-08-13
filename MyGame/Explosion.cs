@@ -23,9 +23,7 @@ namespace MyGame {
 			Position.X -= moveSpeed;
 			ExplosionAnimation.Position = Position;
 			ExplosionAnimation.Update (gameTime);
-			if (Position.X < -Width || !ExplosionAnimation.Active) {
-				Active = false;
-			}
+			if (!ExplosionAnimation.Active) Active = false;
 		}
 
 		public void Draw(SpriteBatch sb) {
