@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PipelineBuildEvent xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <SourceFile>/home/andy/cs/monogame-shooter-tutorial/MyGame/Content/Graphics/bgLayer1.png</SourceFile>
-  <SourceTime>2015-08-10T08:05:26-04:00</SourceTime>
+  <SourceTime>2012-10-03T23:18:58-04:00</SourceTime>
   <DestFile>/home/andy/cs/monogame-shooter-tutorial/MyGame/Content/bin/Linux/Graphics/bgLayer1.xnb</DestFile>
-  <DestTime>2015-08-12T14:19:50-04:00</DestTime>
+  <DestTime>2015-08-12T21:42:22-04:00</DestTime>
   <Importer>TextureImporter</Importer>
-  <ImporterTime>2015-08-07T10:55:35-04:00</ImporterTime>
+  <ImporterTime>2015-08-09T10:58:56-04:00</ImporterTime>
   <Processor>TextureProcessor</Processor>
-  <ProcessorTime>2015-08-07T10:55:35-04:00</ProcessorTime>
+  <ProcessorTime>2015-08-09T10:58:56-04:00</ProcessorTime>
   <Parameters>
     <Key>ColorKeyColor</Key>
     <Value>255,0,255,255</Value>

@@ -67,7 +67,7 @@ namespace MyGame
 		int healthBarVal;
 
 		SpriteFont font;
-		int score = 0;
+		int score;
 
 		public Game1 ()
 		{
@@ -101,6 +101,7 @@ namespace MyGame
 
 			GameState = GameStates.Start;
 			healthBarVal = HEALTH_MAX;
+			score = 0;
 
 			menuCursor = MenuOptions.Start;
 			base.Initialize ();
@@ -192,10 +193,10 @@ namespace MyGame
 				MediaPlayer.Stop ();
 			}
 
-			if (currentKeyboardState.IsKeyDown (Keys.Down) || currentGamePadState.DPad.Up == ButtonState.Pressed) {
+			if (currentKeyboardState.IsKeyDown (Keys.Down) || currentGamePadState.DPad.Down == ButtonState.Pressed) {
 				menuCursor = MenuOptions.Quit;
 			}
-			if (currentKeyboardState.IsKeyDown (Keys.Up) || currentGamePadState.DPad.Down == ButtonState.Pressed) {
+			if (currentKeyboardState.IsKeyDown (Keys.Up) || currentGamePadState.DPad.Up == ButtonState.Pressed) {
 				menuCursor = MenuOptions.Start;
 			}
 		}
@@ -215,10 +216,10 @@ namespace MyGame
 				enemies.Clear ();
 			}
 
-			if (currentKeyboardState.IsKeyDown (Keys.Down) || currentGamePadState.DPad.Up == ButtonState.Pressed) {
+			if (currentKeyboardState.IsKeyDown (Keys.Down) || currentGamePadState.DPad.Down == ButtonState.Pressed) {
 				menuCursor = MenuOptions.Quit;
 			}
-			if (currentKeyboardState.IsKeyDown (Keys.Up) || currentGamePadState.DPad.Down == ButtonState.Pressed) {
+			if (currentKeyboardState.IsKeyDown (Keys.Up) || currentGamePadState.DPad.Up == ButtonState.Pressed) {
 				menuCursor = MenuOptions.Restart;
 			}
 		}
@@ -342,7 +343,6 @@ namespace MyGame
 				}
 			}
 		}
-
 
 		private void AddEnemy() {
 			Animation enemyAnimation = new Animation ();

@@ -21,5 +21,6 @@
     <File>/home/andy/cs/monogame-shooter-tutorial/MyGame/Content/Sound/menuMusic.mp3</File>
     <File>/home/andy/cs/monogame-shooter-tutorial/MyGame/Content/Graphics/healthBar.png</File>
     <File>/home/andy/cs/monogame-shooter-tutorial/MyGame/Content/gameFont.spritefont</File>
+    <File>/home/andy/cs/monogame-shooter-tutorial/MyGame/Content/Graphics/boss.png</File>
   </SourceFiles>
 </SourceFileCollection>

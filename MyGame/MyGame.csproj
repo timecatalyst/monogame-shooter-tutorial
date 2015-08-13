@@ -53,6 +53,7 @@
     <Compile Include="Enemy.cs" />
     <Compile Include="Explosion.cs" />
     <Compile Include="Laser.cs" />
+    <Compile Include="Boss.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Icon.png" />
@@ -134,6 +135,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="Content\gameFont.xnb">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Content\Graphics\boss.xnb">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
