@@ -106,7 +106,7 @@ namespace MyGame
 			GameState = GameStates.Start;
 			healthBarVal = HEALTH_MAX;
 			score = 0;
-			maxEnemyCount = 1;
+			maxEnemyCount = 30;
 			boss = new Boss ();
 			bossFight = false;
 
