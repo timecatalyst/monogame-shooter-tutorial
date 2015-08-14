@@ -36,6 +36,7 @@ namespace MyGame {
 		}
 
 		public void Draw(SpriteBatch sb) {
+			if (!Active) return;
 			sb.Draw (Texture, Position, Color.White);
 		}
 	}

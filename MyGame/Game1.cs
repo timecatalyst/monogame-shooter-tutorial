@@ -71,6 +71,7 @@ namespace MyGame
 		int maxEnemyCount;
 		Texture2D bossTexture;
 		Boss boss;
+		bool bossFight;
 
 		public Game1 ()
 		{
@@ -107,6 +108,7 @@ namespace MyGame
 			score = 0;
 			maxEnemyCount = 1;
 			boss = new Boss ();
+			bossFight = false;
 
 			menuCursor = MenuOptions.Start;
 			base.Initialize ();
@@ -224,6 +226,9 @@ namespace MyGame
 				player.Position.Y = GraphicsDevice.Viewport.TitleSafeArea.Y + GraphicsDevice.Viewport.TitleSafeArea.Height / 2;
 				healthBarRec.Width = healthBar.Width;
 				enemies.Clear ();
+				bossFight = false;
+				boss.Initialize(bossTexture, new Vector2(GraphicsDevice.Viewport.Width + bossTexture.Width, GraphicsDevice.Viewport.Height / 2 - bossTexture.Height / 2));
+				maxEnemyCount = 30;
 			}
 
 			if (currentKeyboardState.IsKeyDown (Keys.Down) || currentGamePadState.DPad.Down == ButtonState.Pressed) {
@@ -235,7 +240,10 @@ namespace MyGame
 		}
 
 		private void UpdateGamePlay(GameTime gt) {
-			if (!player.Active && explosions.Count <= 0) {
+			/* Set gameover if the player dies, or the boss dies during the boss fight.
+			 * We want the explosion animations to finish as well, so we check to see if they were cleaned up.
+			 */
+			if ((!player.Active || (bossFight && !boss.Active)) && explosions.Count <= 0) {
 				GameState = GameStates.GameOver;
 				MediaPlayer.Stop ();
 				return;
@@ -253,7 +261,7 @@ namespace MyGame
 			bgLayer1.Update (gt);
 			bgLayer2.Update (gt);
 
-			if (boss.Active) UpdateBoss (gt);
+			if (bossFight) UpdateBoss (gt);
 
 			UpdateObjectLists (gt);
 			UpdateCollision ();
@@ -289,7 +297,7 @@ namespace MyGame
 			player.Update (gameTime);
 		}
 
-		private void UpdateBoss(GameTime gameTime) {
+		private void UpdateBoss(GameTime gt) {
 			if (boss.hSpeed < 0f && (boss.Position.X < GraphicsDevice.Viewport.Width - boss.Width)) {
 				boss.hSpeed = 0f;
 				boss.vSpeed = 1f;
@@ -303,16 +311,27 @@ namespace MyGame
 				if (boss.Position.Y <= 50f) {
 					boss.vSpeed = 1f;
 				}
+
+				if (boss.Active && gt.TotalGameTime - previousSpawnTime > enemySpawnTime) {
+					previousSpawnTime = gt.TotalGameTime;
+
+					AddEnemy (new Vector2 (boss.Position.X + 20, boss.Position.Y));
+					AddEnemy (new Vector2 (boss.Position.X + 20, boss.Position.Y + 200));
+				}
+
 			}
 
-			boss.Update (gameTime);
+			boss.Update (gt);
 		}
 
 		private void UpdateObjectLists(GameTime gt) {
-			if (!boss.Active && (gt.TotalGameTime - previousSpawnTime > enemySpawnTime)) {
+			if (!bossFight && (gt.TotalGameTime - previousSpawnTime > enemySpawnTime)) {
 				previousSpawnTime = gt.TotalGameTime;
-				AddEnemy ();
-				if (--maxEnemyCount <= 0) boss.Active = true;
+				AddEnemy( new Vector2 (GraphicsDevice.Viewport.Width + enemyTexture.Width / 2, random.Next (50, GraphicsDevice.Viewport.Height - 50)));
+				if (--maxEnemyCount <= 0) { 
+					bossFight = true;
+					boss.Active = true;
+				}
 			}
 
 			for (int i = enemies.Count - 1; i >= 0; i--) {
@@ -332,8 +351,9 @@ namespace MyGame
 		}
 
 		private void UpdateCollision() {
+			// Check to see if any enemies collide with the player or lasers.
 			for (int i = 0; i < enemies.Count; i++) {
-				if (player.BoundingBox.Intersects (enemies[i].BoundingBox)) {
+				if (player.BoundingBox.Intersects (enemies [i].BoundingBox)) {
 					player.Health -= enemies [i].Damage;
 					enemies [i].Health = 0;
 
@@ -347,36 +367,38 @@ namespace MyGame
 					}
 				}
 
-				// See if any lasers collide
 				for (int j = 0; j < lasers.Count; j++) {
-					if (lasers[j].BoundingBox.Intersects (enemies[i].BoundingBox)) {
+					if (lasers [j].BoundingBox.Intersects (enemies [i].BoundingBox)) {
 						enemies [i].Health = 0;
 						AddExplosion (enemies [i].Position, -50, -30, enemies [i].Speed, 30);
 						lasers [j].Active = false;
 						score += enemies [i].Value;
 					}
+				}
+			}
 
-					if (!boss.Active) continue;
+			if (!boss.Active) return;
 
-					if (lasers [j].BoundingBox.Intersects (boss.BoundingBox)) {
-						Console.WriteLine ("Getting here?");
-						lasers [j].Active = false;
-						boss.Health -= 10;
+			// If the boss is active, check to see if it collides with lasers
 
-						if (boss.Health <= 0) {
-							AddExplosion (boss.Position, -100, -50, 0f, 200);
-							score += boss.Value;
-						}
+			for (int i = 0; i < lasers.Count; i++ ) {
+				if (!lasers [i].Active) continue;  // The current laser already hit something else.
+
+				if (lasers [i].BoundingBox.Intersects (boss.BoundingBox)) {
+					lasers [i].Active = false;
+					boss.Health -= 10;
+
+					if (boss.Health <= 0) {
+						AddExplosion (boss.Position, 20, 50, 0f, 200);
+						score += boss.Value;
 					}
 				}
 			}
 		}
 
-		private void AddEnemy() {
+		private void AddEnemy(Vector2 position) {
 			Animation enemyAnimation = new Animation ();
 			enemyAnimation.Initialize (enemyTexture, Vector2.Zero, 47, 61, 8, 30, Color.White, scale, true);
-			Vector2 position = new Vector2 (GraphicsDevice.Viewport.Width + enemyTexture.Width / 2,
-				random.Next (50, GraphicsDevice.Viewport.Height - 50));
 
 			Enemy enemy = new Enemy ();
 			enemy.Initialize (enemyAnimation, position);
@@ -412,7 +434,6 @@ namespace MyGame
 		/// <param name="gameTime">Provides a snapshot of timing values.</param>
 		protected override void Draw (GameTime gameTime)
 		{
-			//graphics.GraphicsDevice.Clear (Color.CornflowerBlue);
 			graphics.GraphicsDevice.Clear (Color.CornflowerBlue);
 
 			spriteBatch.Begin ();
@@ -468,7 +489,7 @@ namespace MyGame
 				lasers [i].Draw (spriteBatch);
 			}
 
-			if (boss.Active) boss.Draw (spriteBatch);
+			if (bossFight) boss.Draw (spriteBatch);
 
 			player.Draw (spriteBatch);
 
