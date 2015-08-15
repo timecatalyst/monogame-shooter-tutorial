@@ -48,12 +48,15 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Player.cs" />
-    <Compile Include="Animation.cs" />
     <Compile Include="ParallaxingBackground.cs" />
     <Compile Include="Enemy.cs" />
     <Compile Include="Explosion.cs" />
     <Compile Include="Laser.cs" />
     <Compile Include="Boss.cs" />
+    <Compile Include="GameObject.cs" />
+    <Compile Include="Constants.cs" />
+    <Compile Include="Graphics.cs" />
+    <Compile Include="Sound.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Icon.png" />

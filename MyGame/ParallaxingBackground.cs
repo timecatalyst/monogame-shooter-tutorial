@@ -11,11 +11,11 @@ namespace MyGame {
 		int bgHeight;
 		int bgWidth;
 
-		public void Initialize(ContentManager content, String texturePath, int screenWidth, int screenHeight, int speed) {
+		public void Initialize(Texture2D texture, int screenWidth, int screenHeight, int speed) {
 			bgHeight = screenHeight;
 			bgWidth = screenWidth;
 
-			texture = content.Load<Texture2D> (texturePath);
+			this.texture = texture;
 			this.speed = speed;
 
 			positions = new Vector2[screenWidth / texture.Width + 1];

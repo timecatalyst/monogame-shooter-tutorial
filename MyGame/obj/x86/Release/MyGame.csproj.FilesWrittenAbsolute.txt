@@ -26,3 +26,6 @@
 /home/andy/cs/monogame-shooter-tutorial/MyGame/bin/Release/MonoGame.Framework.dll
 /home/andy/cs/monogame-shooter-tutorial/MyGame/bin/Release/OpenTK.dll
 /home/andy/cs/monogame-shooter-tutorial/MyGame/bin/Release/Tao.Sdl.dll
+/home/andy/cs/monogame-shooter-tutorial/MyGame/bin/Release/Content/Graphics/healthBar.xnb
+/home/andy/cs/monogame-shooter-tutorial/MyGame/bin/Release/Content/gameFont.xnb
+/home/andy/cs/monogame-shooter-tutorial/MyGame/bin/Release/Content/Graphics/boss.xnb

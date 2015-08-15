@@ -3,39 +3,17 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace MyGame {
-	public class Enemy {
-		public Animation EnemyAnimation;
-		public Vector2 Position;
-		public bool Active;
-		public int Health;
-		public int Damage;
-		public int Value;
-		public float Speed;
-		public int Width { get { return EnemyAnimation.FrameWidth; } }
-		public int Height { get { return EnemyAnimation.FrameHeight; } }
-		public Rectangle BoundingBox { get { return EnemyAnimation.BoundingBox; } }
-
-		public void Initialize(Animation animation, Vector2 position) {
-			EnemyAnimation = animation;
-			Position = position;
-			Active = true;
-			Health = 10;
-			Damage = 10;
-			Speed = 6f;
-			Value = 100;
+	public class Enemy : GameObject {
+		public void Initialize(Texture2D texture, Vector2 position) {
+			// Frame width, frame height, frame count, time between frames(milliseconds), looping
+			_initAnimationParameters(47, 61, 8, 30, true);
+			base.Initialize (texture, position, Constants.ENEMY_SPEED, 0f, 1f, Constants.ENEMY_HEALTH, 
+				             Constants.ENEMY_POINT_VALUE, Constants.ENEMY_COLLIDE_DAMAGE, true);
 		}
 
-		public void Update(GameTime gameTime) {
-			Position.X -= Speed;
-			EnemyAnimation.Position = Position;
-			EnemyAnimation.Update (gameTime);
+		new public void Update(GameTime gt) {
+			base.Update (gt);
 			if (Position.X < -Width || Health <= 0) Active = false;
-		}
-
-		public void Draw(SpriteBatch sb){
-			if (!Active) return;
-			EnemyAnimation.Draw (sb);
 		}
 	}
 }
-

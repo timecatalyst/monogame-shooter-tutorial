@@ -11,13 +11,11 @@ using Microsoft.Xna.Framework.Input;
 
 #endregion
 
-namespace MyGame
-{
+namespace MyGame {
 	/// <summary>
 	/// This is the main type for your game.
 	/// </summary>
 	public class Game1 : Game {
-		private const int HEALTH_MAX = 100;
 		enum GameStates { Start, Playing, GameOver }
 		GameStates GameState;
 
@@ -32,49 +30,32 @@ namespace MyGame
 
 		Player player;
 		float playerMoveSpeed;
-		float scale = 1f;
 
-		Texture2D mainBackground;
 		Rectangle rectBackground;
 		ParallaxingBackground bgLayer1;
 		ParallaxingBackground bgLayer2;
-		Texture2D gameOverScreen;
-		Texture2D startMenu;
 
-		Texture2D enemyTexture;
 		List<Enemy> enemies;
 		TimeSpan enemySpawnTime;
 		TimeSpan previousSpawnTime;
 		Random random;
 
-		Texture2D explosionTexture;
 		List<Explosion> explosions;
 
-		Texture2D laserTexture;
 		List<Laser> lasers;
 		TimeSpan laserSpawnTime;
 		TimeSpan previousLaserSpawnTime;
 
-		SoundEffect sfx_explode;
-		SoundEffect sfx_laser;
-
-		Song menuMusic;
-		Song gameMusic;
-
-		Texture2D healthBar;
 		Rectangle healthBarRec;
 		int healthBarVal;
 
-		SpriteFont font;
 		int score;
 
 		int maxEnemyCount;
-		Texture2D bossTexture;
 		Boss boss;
 		bool bossFight;
 
-		public Game1 ()
-		{
+		public Game1 () {
 			graphics = new GraphicsDeviceManager (this);
 			Content.RootDirectory = "Content";	            
 			graphics.IsFullScreen = false;		
@@ -86,8 +67,7 @@ namespace MyGame
 		/// related content.  Calling base.Initialize will enumerate through any components
 		/// and initialize them as well.
 		/// </summary>
-		protected override void Initialize ()
-		{
+		protected override void Initialize () {
 			player = new Player();
 			playerMoveSpeed = 8.0f;
 
@@ -104,9 +84,9 @@ namespace MyGame
 			laserSpawnTime = TimeSpan.FromSeconds (0.5f);
 
 			GameState = GameStates.Start;
-			healthBarVal = HEALTH_MAX;
+			healthBarVal = Constants.PLAYER_HEALTH;
 			score = 0;
-			maxEnemyCount = 30;
+			maxEnemyCount = Constants.ENEMY_COUNT;
 			boss = new Boss ();
 			bossFight = false;
 
@@ -118,46 +98,26 @@ namespace MyGame
 		/// LoadContent will be called once per game and is the place to load
 		/// all of your content.
 		/// </summary>
-		protected override void LoadContent ()
-		{
+		protected override void LoadContent () {
 			// Create a new SpriteBatch, which can be used to draw textures.
 			spriteBatch = new SpriteBatch (GraphicsDevice);
 
-			gameOverScreen = Content.Load<Texture2D> ("Graphics\\endMenu");
-			startMenu = Content.Load<Texture2D> ("Graphics\\mainMenu");
+			Graphics.load (Content);
+			Sound.load (Content);
 
-			Texture2D playerTexture = Content.Load<Texture2D> ("Graphics\\shipAnimation");
 			Vector2 playerPosition = new Vector2 (GraphicsDevice.Viewport.TitleSafeArea.X,
 				                         GraphicsDevice.Viewport.TitleSafeArea.Y + GraphicsDevice.Viewport.TitleSafeArea.Height / 2);
-			Animation playerAnimation = new Animation ();
-			playerAnimation.Initialize (playerTexture, playerPosition, 115, 69, 8, 30, Color.White, scale, true);
-			player.Initialize (playerAnimation, playerPosition, HEALTH_MAX);
+			player.Initialize (Graphics.Player, playerPosition);
 
-			bgLayer1.Initialize (Content, "Graphics\\bgLayer1", GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height, -1);
-			bgLayer2.Initialize (Content, "Graphics\\bgLayer2", GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height, -2);
-			mainBackground = Content.Load<Texture2D> ("Graphics\\mainbackground");
+			bgLayer1.Initialize (Graphics.BackgroundLayer1, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height, -1);
+			bgLayer2.Initialize (Graphics.BackgroundLayer2, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height, -2);
 			rectBackground = new Rectangle (0, 0, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
 
-			enemyTexture = Content.Load<Texture2D> ("Graphics\\mineAnimation");
-			explosionTexture = Content.Load<Texture2D> ("Graphics\\explosion");
-			laserTexture = Content.Load<Texture2D> ("Graphics\\laser");
+			healthBarRec = new Rectangle (15, 15, Graphics.HealthBar.Width, Graphics.HealthBar.Height);
 
-			sfx_explode = Content.Load<SoundEffect> ("Sound\\explosion");
-			sfx_laser = Content.Load<SoundEffect> ("Sound\\laserFire");
-
-			menuMusic = Content.Load<Song> ("Sound\\menuMusic");
-			gameMusic = Content.Load<Song> ("Sound\\gameMusic");
-			MediaPlayer.IsRepeating = true;
-
-			healthBar = Content.Load<Texture2D> ("Graphics\\healthBar");
-			healthBarRec = new Rectangle (15, 15, healthBar.Width, healthBar.Height);
-
-			font = Content.Load<SpriteFont> ("gameFont");
-
-			bossTexture = Content.Load<Texture2D> ("Graphics\\boss");
-			Vector2 bossPosition = new Vector2(GraphicsDevice.Viewport.Width + bossTexture.Width,
-				GraphicsDevice.Viewport.Height / 2 - bossTexture.Height / 2);
-			boss.Initialize (bossTexture, bossPosition);
+			Vector2 bossPosition = new Vector2(GraphicsDevice.Viewport.Width + Graphics.Boss.Width,
+				GraphicsDevice.Viewport.Height / 2 - Graphics.Boss.Height / 2);
+			boss.Initialize (Graphics.Boss, bossPosition, -2f, 0f, false);
 		}
 
 		/// <summary>
@@ -195,7 +155,7 @@ namespace MyGame
 
 		private void UpdateStartMenu() {
 			if ( MediaPlayer.State != MediaState.Playing )
-				MediaPlayer.Play (menuMusic);
+				MediaPlayer.Play (Sound.MenuMusic);
 
 			if (currentKeyboardState.IsKeyDown (Keys.Enter) || currentGamePadState.Buttons.Start == ButtonState.Pressed) {
 				if (menuCursor == MenuOptions.Quit)
@@ -218,17 +178,17 @@ namespace MyGame
 				if (menuCursor == MenuOptions.Quit)
 					Exit ();
 
-				player.Health = healthBarVal = HEALTH_MAX;
+				player.Health = healthBarVal = Constants.PLAYER_HEALTH;
 				score = 0;
 				GameState = GameStates.Playing;
 				player.Active = true;
 				player.Position.X = GraphicsDevice.Viewport.TitleSafeArea.X;
 				player.Position.Y = GraphicsDevice.Viewport.TitleSafeArea.Y + GraphicsDevice.Viewport.TitleSafeArea.Height / 2;
-				healthBarRec.Width = healthBar.Width;
+				healthBarRec.Width = Graphics.HealthBar.Width;
 				enemies.Clear ();
 				bossFight = false;
-				boss.Initialize(bossTexture, new Vector2(GraphicsDevice.Viewport.Width + bossTexture.Width, GraphicsDevice.Viewport.Height / 2 - bossTexture.Height / 2));
-				maxEnemyCount = 30;
+				boss.Initialize(Graphics.Boss, new Vector2(GraphicsDevice.Viewport.Width + Graphics.Boss.Width, GraphicsDevice.Viewport.Height / 2 - Graphics.Boss.Height / 2), -2f, 0f, false);
+				maxEnemyCount = Constants.ENEMY_COUNT;
 			}
 
 			if (currentKeyboardState.IsKeyDown (Keys.Down) || currentGamePadState.DPad.Down == ButtonState.Pressed) {
@@ -250,11 +210,11 @@ namespace MyGame
 			}
 
 			if (MediaPlayer.State != MediaState.Playing)
-				MediaPlayer.Play (gameMusic);	
+				MediaPlayer.Play (Sound.GameMusic);	
 	
 			if (player.Health < healthBarVal) {
 				healthBarVal--;
-				healthBarRec.Width = (int)(healthBar.Width * (healthBarVal / (float)HEALTH_MAX));
+				healthBarRec.Width = (int)(Graphics.HealthBar.Width * (healthBarVal / (float)Constants.PLAYER_HEALTH));
 			}
 
 			UpdatePlayer (gt);
@@ -269,8 +229,8 @@ namespace MyGame
 
 		private void UpdatePlayer(GameTime gameTime) {
 			if (!player.Active) return;
-			//player.Position.X += currentGamePadState.ThumbSticks.Left.X * playerMoveSpeed;
-			//player.Position.Y -= currentGamePadState.ThumbSticks.Left.Y * playerMoveSpeed;
+			player.Position.X += currentGamePadState.ThumbSticks.Left.X * playerMoveSpeed;
+			player.Position.Y -= currentGamePadState.ThumbSticks.Left.Y * playerMoveSpeed;
 
 			if (currentKeyboardState.IsKeyDown (Keys.Left) || currentGamePadState.DPad.Left == ButtonState.Pressed) {
 				player.Position.X -= playerMoveSpeed;
@@ -298,18 +258,18 @@ namespace MyGame
 		}
 
 		private void UpdateBoss(GameTime gt) {
-			if (boss.hSpeed < 0f && (boss.Position.X < GraphicsDevice.Viewport.Width - boss.Width)) {
-				boss.hSpeed = 0f;
-				boss.vSpeed = 1f;
+			if (boss.xSpeed < 0f && (boss.Position.X < GraphicsDevice.Viewport.Width - boss.Width)) {
+				boss.xSpeed = 0f;
+				boss.ySpeed = 1f;
 			}
 
-			if (boss.hSpeed == 0f) {
+			if (boss.xSpeed == 0f) {
 				if (boss.Position.Y >= (GraphicsDevice.Viewport.Height - boss.Height)) {
-					boss.vSpeed = -1f;
+					boss.ySpeed = -1f;
 				}
 
 				if (boss.Position.Y <= 50f) {
-					boss.vSpeed = 1f;
+					boss.ySpeed = 1f;
 				}
 
 				if (boss.Active && gt.TotalGameTime - previousSpawnTime > enemySpawnTime) {
@@ -327,7 +287,7 @@ namespace MyGame
 		private void UpdateObjectLists(GameTime gt) {
 			if (!bossFight && (gt.TotalGameTime - previousSpawnTime > enemySpawnTime)) {
 				previousSpawnTime = gt.TotalGameTime;
-				AddEnemy( new Vector2 (GraphicsDevice.Viewport.Width + enemyTexture.Width / 2, random.Next (50, GraphicsDevice.Viewport.Height - 50)));
+				AddEnemy( new Vector2 (GraphicsDevice.Viewport.Width + Graphics.Enemy.Width / 2, random.Next (50, GraphicsDevice.Viewport.Height - 50)));
 				if (--maxEnemyCount <= 0) { 
 					bossFight = true;
 					boss.Active = true;
@@ -354,11 +314,11 @@ namespace MyGame
 			// Check to see if any enemies collide with the player or lasers.
 			for (int i = 0; i < enemies.Count; i++) {
 				if (player.BoundingBox.Intersects (enemies [i].BoundingBox)) {
-					player.Health -= enemies [i].Damage;
+					player.Health -= enemies [i].DamageDealt;
 					enemies [i].Health = 0;
 
 					// switch to an explosion animation
-					AddExplosion (enemies [i].Position, -50, -30, enemies [i].Speed, 30);
+					AddExplosion (enemies [i].Position, -50, -30, enemies[i].xSpeed, 30);
 
 					if (player.Health <= 0) {
 						AddExplosion (player.Position, 0, -30, 0f, 200);
@@ -370,9 +330,9 @@ namespace MyGame
 				for (int j = 0; j < lasers.Count; j++) {
 					if (lasers [j].BoundingBox.Intersects (enemies [i].BoundingBox)) {
 						enemies [i].Health = 0;
-						AddExplosion (enemies [i].Position, -50, -30, enemies [i].Speed, 30);
+						AddExplosion (enemies [i].Position, -50, -30, -enemies [i].xSpeed, 30);
 						lasers [j].Active = false;
-						score += enemies [i].Value;
+						score += enemies [i].PointValue;
 					}
 				}
 			}
@@ -390,18 +350,15 @@ namespace MyGame
 
 					if (boss.Health <= 0) {
 						AddExplosion (boss.Position, 20, 50, 0f, 200);
-						score += boss.Value;
+						score += boss.PointValue;
 					}
 				}
 			}
 		}
 
 		private void AddEnemy(Vector2 position) {
-			Animation enemyAnimation = new Animation ();
-			enemyAnimation.Initialize (enemyTexture, Vector2.Zero, 47, 61, 8, 30, Color.White, scale, true);
-
 			Enemy enemy = new Enemy ();
-			enemy.Initialize (enemyAnimation, position);
+			enemy.Initialize (Graphics.Enemy, position);
 			enemies.Add (enemy);
 		}
 
@@ -411,21 +368,19 @@ namespace MyGame
 			position.Y += yOffset;
 
 			Laser laser = new Laser ();
-			laser.Initialize (laserTexture, position, GraphicsDevice.Viewport.Width);
+			laser.Initialize (Graphics.Laser, position, GraphicsDevice.Viewport.Width);
 			lasers.Add (laser);
-			sfx_laser.Play ();
+			Sound.SFX_Laser.Play ();
 		}
 
 		private void AddExplosion(Vector2 position, int xOffset, int yOffset, float velocity, int animationSpeedMS) {
 			position.X += xOffset;
 			position.Y += yOffset;
 
-			Animation explosionAnimation = new Animation ();
-			explosionAnimation.Initialize (explosionTexture, position, 133, 134, 12, animationSpeedMS, Color.White, scale, false);
 			Explosion ex = new Explosion ();
-			ex.Initialize (explosionAnimation, position, velocity);
+			ex.Initialize (Graphics.Explosion, position, velocity, animationSpeedMS);
 			explosions.Add (ex);
-			sfx_explode.Play ();
+			Sound.SFX_Explosion.Play ();
 		}
 
 		/// <summary>
@@ -455,25 +410,25 @@ namespace MyGame
 		}
 
 		private void DrawStartMenu() {
-			spriteBatch.Draw (startMenu, rectBackground, Color.White);
+			spriteBatch.Draw (Graphics.StartMenu, rectBackground, Color.White);
 
-			spriteBatch.DrawString (font, ">", new Vector2 (325, (int)menuCursor), Color.White);
-			spriteBatch.DrawString (font, "Start", new Vector2 (350, 300), Color.White);
-			spriteBatch.DrawString (font, "Quit", new Vector2 (350, 340), Color.White);
+			spriteBatch.DrawString (Graphics.Font, ">", new Vector2 (325, (int)menuCursor), Color.White);
+			spriteBatch.DrawString (Graphics.Font, "Start", new Vector2 (350, 300), Color.White);
+			spriteBatch.DrawString (Graphics.Font, "Quit", new Vector2 (350, 340), Color.White);
 		}
 
 		private void DrawGameOverScreen() {
-			spriteBatch.Draw (gameOverScreen, rectBackground, Color.White);
+			spriteBatch.Draw (Graphics.GameOverScreen, rectBackground, Color.White);
 
-			spriteBatch.DrawString (font, "Final Score: " + score, new Vector2 (300, 200), Color.White);
+			spriteBatch.DrawString (Graphics.Font, "Final Score: " + score, new Vector2 (300, 200), Color.White);
 
-			spriteBatch.DrawString (font, ">", new Vector2 (325, (int)menuCursor), Color.White);
-			spriteBatch.DrawString (font, "Restart", new Vector2 (350, 300), Color.White);
-			spriteBatch.DrawString (font, "Quit", new Vector2 (350, 340), Color.White);
+			spriteBatch.DrawString (Graphics.Font, ">", new Vector2 (325, (int)menuCursor), Color.White);
+			spriteBatch.DrawString (Graphics.Font, "Restart", new Vector2 (350, 300), Color.White);
+			spriteBatch.DrawString (Graphics.Font, "Quit", new Vector2 (350, 340), Color.White);
 		}
 
 		private void DrawGamePlay() {
-			spriteBatch.Draw (mainBackground, rectBackground, Color.White);
+			spriteBatch.Draw (Graphics.Background, rectBackground, Color.White);
 			bgLayer1.Draw (spriteBatch);
 			bgLayer2.Draw (spriteBatch);
 
@@ -493,8 +448,8 @@ namespace MyGame
 
 			player.Draw (spriteBatch);
 
-			spriteBatch.Draw (healthBar, healthBarRec, Color.White);
-			spriteBatch.DrawString (font, "Score: " + score, new Vector2 (600, 10), Color.White);
+			spriteBatch.Draw (Graphics.HealthBar, healthBarRec, Color.White);
+			spriteBatch.DrawString (Graphics.Font, "Score: " + score, new Vector2 (600, 10), Color.White);
 		}
 	}
 }
