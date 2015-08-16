@@ -16,28 +16,26 @@ namespace MyGame {
 	/// This is the main type for your game.
 	/// </summary>
 	public class Game1 : Game {
-		enum GameStates { Start, Playing, GameOver }
-		GameStates GameState;
-
-		enum MenuOptions { Start=300, Restart=300, Quit=340 }
-		MenuOptions menuCursor;
-
 		GraphicsDeviceManager graphics;
 		SpriteBatch spriteBatch;
 
-		KeyboardState currentKeyboardState;
-		GamePadState currentGamePadState;
+		enum GameStates { Start, Playing, GameOver }
+		enum MenuOptions { Start=300, Restart=300, Quit=340 }
+		GameStates GameState;
+		MenuOptions menuCursor;
 
 		Player player;
-		float playerMoveSpeed;
+		Boss boss;
+		bool bossFight;
 
 		Rectangle rectBackground;
 		ParallaxingBackground bgLayer1;
 		ParallaxingBackground bgLayer2;
 
 		List<Enemy> enemies;
+		int maxEnemyCount;
 		TimeSpan enemySpawnTime;
-		TimeSpan previousSpawnTime;
+		TimeSpan prevEnemySpawnTime;
 		Random random;
 
 		List<Explosion> explosions;
@@ -48,12 +46,7 @@ namespace MyGame {
 
 		Rectangle healthBarRec;
 		int healthBarVal;
-
 		int score;
-
-		int maxEnemyCount;
-		Boss boss;
-		bool bossFight;
 
 		public Game1 () {
 			graphics = new GraphicsDeviceManager (this);
@@ -68,28 +61,28 @@ namespace MyGame {
 		/// and initialize them as well.
 		/// </summary>
 		protected override void Initialize () {
+			random = new Random ();
+
 			player = new Player();
-			playerMoveSpeed = 8.0f;
+			boss = new Boss ();
 
 			bgLayer1 = new ParallaxingBackground ();
 			bgLayer2 = new ParallaxingBackground ();
 
 			enemies = new List<Enemy> ();
-			previousSpawnTime = TimeSpan.Zero;
-			enemySpawnTime = TimeSpan.FromSeconds (1.0f);
-			random = new Random ();
-
 			explosions = new List<Explosion> ();
 			lasers = new List<Laser> ();
+
+			enemySpawnTime = TimeSpan.FromSeconds (1.0f);
+			prevEnemySpawnTime = TimeSpan.Zero;
 			laserSpawnTime = TimeSpan.FromSeconds (0.5f);
 
-			GameState = GameStates.Start;
 			healthBarVal = Constants.PLAYER_HEALTH;
-			score = 0;
 			maxEnemyCount = Constants.ENEMY_COUNT;
-			boss = new Boss ();
+			score = 0;
 			bossFight = false;
 
+			GameState = GameStates.Start;
 			menuCursor = MenuOptions.Start;
 			base.Initialize ();
 		}
@@ -126,17 +119,14 @@ namespace MyGame {
 		/// </summary>
 		/// <param name="gameTime">Provides a snapshot of timing values.</param>
 		protected override void Update (GameTime gameTime) {
+			Input.GetInputState ();
+
 			// For Mobile devices, this logic will close the Game when the Back button is pressed
 			// Exit() is obsolete on iOS
 			#if !__IOS__
-			if (GamePad.GetState (PlayerIndex.One).Buttons.Back == ButtonState.Pressed ||
-			    Keyboard.GetState ().IsKeyDown (Keys.Escape)) {
+			if (Input.Quit())
 				Exit ();
-			}
 			#endif
-
-			currentKeyboardState = Keyboard.GetState ();
-			currentGamePadState = GamePad.GetState (PlayerIndex.One);
 
 			switch(GameState) {
 				case GameStates.Start:
@@ -150,14 +140,13 @@ namespace MyGame {
 					break;
 			}
 			base.Update (gameTime);
-
 		}
 
 		private void UpdateStartMenu() {
 			if ( MediaPlayer.State != MediaState.Playing )
 				MediaPlayer.Play (Sound.MenuMusic);
 
-			if (currentKeyboardState.IsKeyDown (Keys.Enter) || currentGamePadState.Buttons.Start == ButtonState.Pressed) {
+			if (Input.Start()) {
 				if (menuCursor == MenuOptions.Quit)
 					Exit ();
 
@@ -165,16 +154,12 @@ namespace MyGame {
 				MediaPlayer.Stop ();
 			}
 
-			if (currentKeyboardState.IsKeyDown (Keys.Down) || currentGamePadState.DPad.Down == ButtonState.Pressed) {
-				menuCursor = MenuOptions.Quit;
-			}
-			if (currentKeyboardState.IsKeyDown (Keys.Up) || currentGamePadState.DPad.Up == ButtonState.Pressed) {
-				menuCursor = MenuOptions.Start;
-			}
+			if (Input.Down()) menuCursor = MenuOptions.Quit;
+			if (Input.Up())   menuCursor = MenuOptions.Start;
 		}
 
 		private void UpdateGameOverScreen() {
-			if (currentKeyboardState.IsKeyDown (Keys.Enter) || currentGamePadState.Buttons.Start == ButtonState.Pressed) {
+			if (Input.Start()) {
 				if (menuCursor == MenuOptions.Quit)
 					Exit ();
 
@@ -191,12 +176,8 @@ namespace MyGame {
 				maxEnemyCount = Constants.ENEMY_COUNT;
 			}
 
-			if (currentKeyboardState.IsKeyDown (Keys.Down) || currentGamePadState.DPad.Down == ButtonState.Pressed) {
-				menuCursor = MenuOptions.Quit;
-			}
-			if (currentKeyboardState.IsKeyDown (Keys.Up) || currentGamePadState.DPad.Up == ButtonState.Pressed) {
-				menuCursor = MenuOptions.Restart;
-			}
+			if (Input.Down()) menuCursor = MenuOptions.Quit;
+			if (Input.Up())   menuCursor = MenuOptions.Restart;
 		}
 
 		private void UpdateGamePlay(GameTime gt) {
@@ -229,23 +210,16 @@ namespace MyGame {
 
 		private void UpdatePlayer(GameTime gameTime) {
 			if (!player.Active) return;
-			player.Position.X += currentGamePadState.ThumbSticks.Left.X * playerMoveSpeed;
-			player.Position.Y -= currentGamePadState.ThumbSticks.Left.Y * playerMoveSpeed;
 
-			if (currentKeyboardState.IsKeyDown (Keys.Left) || currentGamePadState.DPad.Left == ButtonState.Pressed) {
-				player.Position.X -= playerMoveSpeed;
-			}
-			if (currentKeyboardState.IsKeyDown (Keys.Right) || currentGamePadState.DPad.Right == ButtonState.Pressed) {
-				player.Position.X += playerMoveSpeed;
-			}
-			if (currentKeyboardState.IsKeyDown (Keys.Up) || currentGamePadState.DPad.Up == ButtonState.Pressed) {
-				player.Position.Y -= playerMoveSpeed;
-			}
-			if (currentKeyboardState.IsKeyDown (Keys.Down) || currentGamePadState.DPad.Down == ButtonState.Pressed) {
-				player.Position.Y += playerMoveSpeed;
-			}
+			player.xSpeed = Input.LeftAnalogX () * Constants.PLAYER_MOVE_SPEED;
+			player.ySpeed = Input.LeftAnalogY () * -Constants.PLAYER_MOVE_SPEED;
 
-			if (currentKeyboardState.IsKeyDown (Keys.Space) || currentGamePadState.Buttons.A == ButtonState.Pressed) {
+			if (Input.Left ())  player.Position.X -= Constants.PLAYER_MOVE_SPEED;
+			if (Input.Right ()) player.Position.X += Constants.PLAYER_MOVE_SPEED;
+			if (Input.Up ())    player.Position.Y -= Constants.PLAYER_MOVE_SPEED;
+			if (Input.Down ())  player.Position.Y += Constants.PLAYER_MOVE_SPEED;
+
+			if (Input.Shoot ()) {
 				if (gameTime.TotalGameTime - previousLaserSpawnTime > laserSpawnTime) {
 					previousLaserSpawnTime = gameTime.TotalGameTime;
 					AddLaser (player.Position, 80, 25);
@@ -264,29 +238,25 @@ namespace MyGame {
 			}
 
 			if (boss.xSpeed == 0f) {
-				if (boss.Position.Y >= (GraphicsDevice.Viewport.Height - boss.Height)) {
+				if (boss.Position.Y >= (GraphicsDevice.Viewport.Height - boss.Height))
 					boss.ySpeed = -1f;
-				}
-
-				if (boss.Position.Y <= 50f) {
+			
+				if (boss.Position.Y <= 50f)
 					boss.ySpeed = 1f;
-				}
 
-				if (boss.Active && gt.TotalGameTime - previousSpawnTime > enemySpawnTime) {
-					previousSpawnTime = gt.TotalGameTime;
+				if (boss.Active && gt.TotalGameTime - prevEnemySpawnTime > enemySpawnTime) {
+					prevEnemySpawnTime = gt.TotalGameTime;
 
 					AddEnemy (new Vector2 (boss.Position.X + 20, boss.Position.Y));
 					AddEnemy (new Vector2 (boss.Position.X + 20, boss.Position.Y + 200));
 				}
-
 			}
-
 			boss.Update (gt);
 		}
 
 		private void UpdateObjectLists(GameTime gt) {
-			if (!bossFight && (gt.TotalGameTime - previousSpawnTime > enemySpawnTime)) {
-				previousSpawnTime = gt.TotalGameTime;
+			if (!bossFight && (gt.TotalGameTime - prevEnemySpawnTime > enemySpawnTime)) {
+				prevEnemySpawnTime = gt.TotalGameTime;
 				AddEnemy( new Vector2 (GraphicsDevice.Viewport.Width + Graphics.Enemy.Width / 2, random.Next (50, GraphicsDevice.Viewport.Height - 50)));
 				if (--maxEnemyCount <= 0) { 
 					bossFight = true;
@@ -313,7 +283,7 @@ namespace MyGame {
 		private void UpdateCollision() {
 			// Check to see if any enemies collide with the player or lasers.
 			for (int i = 0; i < enemies.Count; i++) {
-				if (player.BoundingBox.Intersects (enemies [i].BoundingBox)) {
+				if (player.Active && player.BoundingBox.Intersects (enemies [i].BoundingBox)) {
 					player.Health -= enemies [i].DamageDealt;
 					enemies [i].Health = 0;
 
@@ -432,17 +402,14 @@ namespace MyGame {
 			bgLayer1.Draw (spriteBatch);
 			bgLayer2.Draw (spriteBatch);
 
-			for (int i = 0; i < enemies.Count; i++) {
+			for (int i = 0; i < enemies.Count; i++)
 				enemies [i].Draw (spriteBatch);
-			}
 
-			for (int i = 0; i < explosions.Count; i++) {
+			for (int i = 0; i < explosions.Count; i++)
 				explosions [i].Draw (spriteBatch);
-			}
 
-			for (int i = 0; i < lasers.Count; i++) {
+			for (int i = 0; i < lasers.Count; i++)
 				lasers [i].Draw (spriteBatch);
-			}
 
 			if (bossFight) boss.Draw (spriteBatch);
 
@@ -453,4 +420,3 @@ namespace MyGame {
 		}
 	}
 }
-

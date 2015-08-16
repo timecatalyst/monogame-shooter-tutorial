@@ -57,6 +57,7 @@
     <Compile Include="Constants.cs" />
     <Compile Include="Graphics.cs" />
     <Compile Include="Sound.cs" />
+    <Compile Include="Input.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Icon.png" />

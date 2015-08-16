@@ -2,12 +2,13 @@
 
 namespace MyGame {
 	public static class Constants {
-		public const bool GAMEPAD_ENABLED = true;
+		public static bool GAMEPAD_ENABLED = true;
 
 		public const int PLAYER_HEALTH = 100;
 		public const int PLAYER_COLLIDE_DAMAGE = 10;
 		public const int PLAYER_LASER_DAMAGE = 10;
 		public const float PLAYER_LASER_SPEED = 6f;
+		public const float PLAYER_MOVE_SPEED = 8f;
 
 		public const int BOSS_HEALTH = 100;
 		public const int BOSS_COLLIDE_DAMAGE = 10;
